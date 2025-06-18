@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RTSP Face Detection Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>RTSP Face Detection System</h1>
+      <p>Real-time face detection from RTSP camera streams</p>
+    </div>
+
+    <div class="dashboard">
+      <div class="video-section">
+        <h3>Live Video Feed</h3>
+        <div class="video-container">
+       <img id="video" src="http://127.0.0.1:5000/video_feed" alt="Live Feed" />
+
+
+        </div>
+        <div class="controls">
+          <button class="btn btn-primary" onclick="startDetection()">Start Detection</button>
+          <button class="btn btn-secondary" onclick="stopDetection()">Stop</button>
+          <button class="btn btn-secondary" onclick="takeSnapshot()">Snapshot</button>
+          <span>Status: <span id="status">Offline</span></span>
+          <span class="status-indicator status-offline" id="statusIndicator"></span>
+        </div>
+      </div>
+
+      <div class="stats-section">
+        <h3>Detection Statistics</h3>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number" id="totalFaces">0</div>
+            <div class="stat-label">Total Faces</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="currentFps">0</div>
+            <div class="stat-label">FPS</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="uptime">00:00</div>
+            <div class="stat-label">Uptime</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="lastDetection">Never</div>
+            <div class="stat-label">Last Detection</div>
+          </div>
+        </div>
+
+        <h4>Recent Detections</h4>
+        <div class="detections-list" id="detectionsList">
+          <div class="detection-item">
+            <span class="timestamp">No detections yet</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="config-section">
+      <h3>Configuration</h3>
+      <div class="grid-two">
+        <div>
+          <div class="form-group">
+            <label for="rtspUrl">RTSP URL:</label>
+            <input type="text" id="rtspUrl" value="rtsp://admin:password@192.168.1.100:554/stream1" />
+          </div>
+          <div class="form-group">
+            <label for="frameWidth">Frame Width:</label>
+            <input type="number" id="frameWidth" value="640" />
+          </div>
+          <div class="form-group">
+            <label for="frameHeight">Frame Height:</label>
+            <input type="number" id="frameHeight" value="480" />
+          </div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label for="scaleFactor">Scale Factor:</label>
+            <input type="number" id="scaleFactor" value="1.1" step="0.1" />
+          </div>
+          <div class="form-group">
+            <label for="minNeighbors">Min Neighbors:</label>
+            <input type="number" id="minNeighbors" value="5" />
+          </div>
+          <div class="form-group">
+            <label for="minSize">Min Face Size:</label>
+            <input type="number" id="minSize" value="30" />
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="updateConfig()">Update Configuration</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

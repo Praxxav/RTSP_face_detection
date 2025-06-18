@@ -1,0 +1,7 @@
+flask
+flask-socketio
+bcrypt
+opencv-python
+mtcnn==0.1.0
+pillow
+numpy

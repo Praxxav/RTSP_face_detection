@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - RTSP System</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="container" style="max-width: 400px; margin-top: 50px;">
+    <h2>Login</h2>
+    {% if error %}
+      <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    <form onsubmit="return handleRedirect(event)">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      <div style="margin-top: 20px;">
+        <button type="submit">Login</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    function handleRedirect(event) {
+      event.preventDefault();
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!username || !password) {
+        alert("Both username and password are required.");
+        return false;
+      }
+
+      // Optional: Validate credentials here (client-side mock)
+      // Simulate success redirect
+      window.location.href = "http://127.0.0.1:3000/static/index.html";
+      return false;
+    }
+  </script>
+</body>
+</html>
