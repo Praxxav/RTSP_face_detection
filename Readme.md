@@ -37,9 +37,10 @@ rtsp_face_detection/
 │   ├── index.html              # Main dashboard UI
 │   └── login.html              # Login screen
 │
-├── static/
+├── templates/
 │   ├── styles.css              # Dashboard styling
-│   ├── script.js               # Frontend logic
+│   ├── script.js 
+    ├── Index.html
 │   └── images/                 # Saved detection images
 │
 ├── detection/

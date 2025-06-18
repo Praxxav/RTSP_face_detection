@@ -11,9 +11,6 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-
-
-app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'
 app.config['UPLOAD_FOLDER'] = 'static/images'
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -24,14 +21,18 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 def create_admin_user():
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id FROM users WHERE username = ?", ('admin',))
-    if cursor.fetchone() is None:
-        password = bcrypt.hashpw('admin123'.encode(), bcrypt.gensalt())
-        cursor.execute("INSERT INTO users (username, password_hash, last_login) VALUES (?, ?, ?)",
-                       ('admin', password, datetime.now()))
-        conn.commit()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM users WHERE username = ?", ('admin',))
+        if cursor.fetchone() is None:
+            password = bcrypt.hashpw('admin123'.encode(), bcrypt.gensalt())
+            cursor.execute(
+                "INSERT INTO users (username, password_hash, last_login) VALUES (?, ?, ?)",
+                ('admin', password, datetime.now())
+            )
+            conn.commit()
+    finally:
+        conn.close()
 
 @app.route('/')
 def index():
@@ -42,24 +43,34 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if not username or not password:
+            return render_template('function/login.html', error='Missing credentials')
+        
         conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, password_hash FROM users WHERE username = ?", (username,))
-        user = cursor.fetchone()
-        conn.close()
-        if user and bcrypt.checkpw(password.encode(), user['password_hash']):
-            session['user_id'] = user['id']
-            session['username'] = username
-            return redirect(url_for('index'))
-        return render_template('login.html', error='Invalid credentials')
-    return render_template('login.html')
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, password_hash FROM users WHERE username = ?", (username,))
+            user = cursor.fetchone()
+            
+            if user and bcrypt.checkpw(password.encode(), user['password_hash']):
+                session['user_id'] = user['id']
+                session['username'] = username
+                return redirect(url_for('index'))
+            else:
+                return render_template('function/login.html', error='Invalid credentials')
+        finally:
+            conn.close()
+    
+    return render_template('function/login.html')  # Corrected template path
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
 
 @app.route('/video_feed')
 def video_feed():
@@ -102,13 +113,17 @@ if __name__ == '__main__':
     create_admin_user()
     socketio.run(app, debug=True)
 
-    from database.model import get_detection_stats
 
 @app.route('/api/stats')
 def api_stats():
-
     if 'user_id' not in session:
         return jsonify({'error': 'Unauthorized'}), 401
-
+    
+    from database.model import get_detection_stats  # Import inside function
     stats = get_detection_stats()
     return jsonify(stats)
+
+if __name__ == '__main__':
+    init_db()
+    create_admin_user()
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)

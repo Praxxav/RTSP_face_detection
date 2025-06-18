@@ -26,7 +26,7 @@ class StreamProcessor(threading.Thread):
                 self.last_alert_time = time.time()
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
                 filename = f"stream{self.stream_id}_{timestamp}.jpg"
-                filepath = os.path.join("static", "images", filename)
+                filepath = os.path.join("templates", "images", filename)
                 cv2.imwrite(filepath, frame)
                 self.alert_callback({
                     "stream_id": self.stream_id,

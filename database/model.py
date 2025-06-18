@@ -5,7 +5,7 @@ from datetime import datetime
 DATABASE_PATH = 'database/database.db'
 
 def get_db_connection():
-    """Get database connection with row factory"""
+   
     conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute('PRAGMA foreign_keys = ON')
@@ -68,7 +68,6 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             detection_id INTEGER NOT NULL,
             viewed BOOLEAN DEFAULT 0,
-            dismissed BOOLEAN DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             viewed_at TIMESTAMP,
             FOREIGN KEY (detection_id) REFERENCES detections (id) ON DELETE CASCADE
