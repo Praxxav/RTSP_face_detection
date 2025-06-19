@@ -150,18 +150,6 @@ Edit `config.py` to modify:
 
 ---
 
-## 📌 TODOs
-
-- [ ] Add WebSocket updates for real-time alerts
-- [ ] Add admin panel to view users and control streams
-- [ ] Containerize using Docker
-- [ ] Export alerts to CSV/Excel
-- [ ] Add email/SMS notifications
-- [ ] Implement face recognition (identification)
-- [ ] Add multiple camera support
-
----
-
 ## 🐛 Troubleshooting
 
 **Common Issues:**
