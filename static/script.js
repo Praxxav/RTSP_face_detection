@@ -1,14 +1,37 @@
 let isDetecting = false;
 let startTime = null;
 let detectionCount = 0;
+let socket = null;
 
 function startDetection() {
   if (!isDetecting) {
     isDetecting = true;
     startTime = new Date();
     updateStatus('Online');
-    document.getElementById('video').src = "http://127.0.0.1:5000/video_feed"; // 🔥 key line
-    simulateDetection();
+    document.getElementById('video').src = "http://127.0.0.1:5000/video_feed";
+
+    // Connect to backend via Socket.IO
+    socket = io();
+
+    // Listen for real-time alerts from Flask
+    socket.on('new_alert', (data) => {
+      console.log('📡 New detection received:', data);
+
+      const faceCount = data.face_count || 0;
+      detectionCount += faceCount;
+
+      document.getElementById('totalFaces').textContent = detectionCount;
+      document.getElementById('lastDetection').textContent = new Date().toLocaleTimeString();
+      addDetection(faceCount);
+
+      // Optionally display snapshot
+      if (data.frame_url) {
+        document.getElementById('snapshotImage').src = data.frame_url + `?t=${Date.now()}`; // avoid caching
+      }
+
+      // Simulate FPS value
+      document.getElementById('currentFps').textContent = Math.floor(Math.random() * 5) + 25;
+    });
   }
 }
 
@@ -17,6 +40,12 @@ function stopDetection() {
     isDetecting = false;
     updateStatus('Offline');
     document.getElementById('video').src = '';
+
+    // Disconnect from Socket.IO
+    if (socket) {
+      socket.disconnect();
+      socket = null;
+    }
   }
 }
 
@@ -63,21 +92,6 @@ function addDetection(faceCount) {
   }
 }
 
-function simulateDetection() {
-  if (!isDetecting) return;
-
-  if (Math.random() < 0.3) {
-    const faceCount = Math.floor(Math.random() * 3) + 1;
-    detectionCount += faceCount;
-    document.getElementById('totalFaces').textContent = detectionCount;
-    document.getElementById('lastDetection').textContent = new Date().toLocaleTimeString();
-    addDetection(faceCount);
-  }
-
-  document.getElementById('currentFps').textContent = Math.floor(Math.random() * 5) + 25;
-  setTimeout(simulateDetection, 1000);
-}
-
 function updateUptime() {
   if (startTime && isDetecting) {
     const now = new Date();
@@ -94,5 +108,5 @@ function updateUptime() {
 setInterval(updateUptime, 1000);
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('RTSP Face Detection Dashboard loaded');
+  console.log('✅ RTSP Face Detection Dashboard loaded (Real-Time Mode)');
 });

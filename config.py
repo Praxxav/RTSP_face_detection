@@ -1,4 +1,4 @@
-# config.py - RTSP Face Detection Configuration
+
 import cv2
 import os
 

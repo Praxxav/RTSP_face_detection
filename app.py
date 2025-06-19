@@ -47,7 +47,7 @@ def login():
         password = request.form.get('password')
         
         if not username or not password:
-            return render_template('function/login.html', error='Missing credentials')
+            return render_template('static/function/login.html', error='Missing credentials')
         
         conn = get_db_connection()
         try:
@@ -71,26 +71,45 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-
 @app.route('/video_feed')
 def video_feed():
     def generate_frames():
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(0)  # Or replace with your RTSP stream URL
         while True:
             success, frame = cap.read()
             if not success:
                 continue
+
             detections = face_detector.detect_optimized(frame, 0.8)
-            for det in detections:
-                x, y, w, h = det['box']
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+            if detections:
+                # Draw bounding boxes
+                for det in detections:
+                    x, y, w, h = det['box']
+                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+                # Save snapshot to static/images folder
+                snapshot_path = os.path.join(app.config['UPLOAD_FOLDER'], 'snapshot.jpg')
+                cv2.imwrite(snapshot_path, frame)
+
+                # Emit detection alert with SocketIO
+                alert_callback({
+                    'face_count': len(detections),
+                    'stream': 'webcam',
+                    'frame_url': '/images/snapshot.jpg'
+                })
+
             _, buffer = cv2.imencode('.jpg', frame)
             yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 @app.route('/images/<filename>')
 def serve_image(filename):
+    """Serves image files from the UPLOAD_FOLDER."""
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
 
 @socketio.on('connect')
 def on_connect():
