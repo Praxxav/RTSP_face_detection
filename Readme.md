@@ -54,8 +54,7 @@ rtsp_face_detection/
 │   │   └── index.html              # Dashboard template functions
 │   └── venv/                       # Virtual environment files
 │
-├── config.py                       # Configuration settings
-├── face_detection.db               # Main SQLite database
+├── config.py                       # Configuration settings             # Main SQLite database
 ├── requirements.txt                # Python dependencies
 ├── .gitignore                      # Git ignore file
 └── README.md                       # This file
