@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,10 +18,8 @@
       <div class="video-section">
         <h3>Live Video Feed</h3>
         <div class="video-container">
-       <img id="video" src="http://127.0.0.1:5000/video_feed" alt="Live Feed" />
-       <img id="snapshotImage" width="300" style="margin-top: 10px;" />
-
-
+          <img id="video" src="http://127.0.0.1:5000/video_feed" alt="Live Feed" />
+          <img id="snapshotImage" width="300" style="margin-top: 10px;" />
         </div>
         <div class="controls">
           <button class="btn btn-primary" onclick="startDetection()">Start Detection</button>
@@ -96,8 +95,8 @@
       <button class="btn btn-primary" onclick="updateConfig()">Update Configuration</button>
     </div>
   </div>
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script src="{{ url_for('static', filename='script.js') }}"></script>
 
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

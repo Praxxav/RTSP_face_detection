@@ -23,7 +23,7 @@ class Config:
     # Frame Processing
     FRAME_WIDTH = 640
     FRAME_HEIGHT = 480
-    FPS_LIMIT = 30
+    FPS_LIMIT = 15
     
     # Detection Settings
     CONFIDENCE_THRESHOLD = 0.5
@@ -44,7 +44,7 @@ class Config:
     
     # Alert Settings
     ENABLE_ALERTS = True
-    MAX_FACES_ALERT = 10
+    MAX_FACES_ALERT = 2
     
     # Performance
     SKIP_FRAMES = 2  # Process every nth frame

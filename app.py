@@ -1,7 +1,9 @@
+import time
 from flask import Flask, jsonify, render_template, request, session, redirect, url_for, send_from_directory, Response
 from flask_socketio import SocketIO, emit
 import bcrypt, cv2, os, threading
 from datetime import datetime
+
 
 from detection.face_detector import FaceDetector
 from detection.stream_processor import StreamProcessor
@@ -11,7 +13,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-app.config['SECRET_KEY'] = 'your-secret-key'
+app.config['SECRET_KEY'] = 'fsfidvkjfvkjk'
 app.config['UPLOAD_FOLDER'] = 'static/images'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
@@ -74,37 +76,57 @@ def logout():
 @app.route('/video_feed')
 def video_feed():
     def generate_frames():
-        cap = cv2.VideoCapture(0)  # Or replace with your RTSP stream URL
+        cap = cv2.VideoCapture(0)  # replace with RTSP_URL
+        frame_count = 0
+        start_time = time.time()
+        TARGET_FPS = 15
+        FRAME_INTERVAL = 1.0 / TARGET_FPS
+
         while True:
+            loop_start = time.time()
             success, frame = cap.read()
             if not success:
                 continue
 
+            # Detection
             detections = face_detector.detect_optimized(frame, 0.8)
-
             if detections:
-                # Draw bounding boxes
                 for det in detections:
                     x, y, w, h = det['box']
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-                # Save snapshot to static/images folder
+                # Save snapshot
                 snapshot_path = os.path.join(app.config['UPLOAD_FOLDER'], 'snapshot.jpg')
                 cv2.imwrite(snapshot_path, frame)
 
-                # Emit detection alert with SocketIO
+                # Emit detection alert
                 alert_callback({
                     'face_count': len(detections),
                     'stream': 'webcam',
                     'frame_url': '/images/snapshot.jpg'
                 })
 
+            # FPS tracking
+            frame_count += 1
+            elapsed = time.time() - start_time
+            if elapsed >= 1.0:
+                fps = frame_count / elapsed
+                socketio.emit('fps_update', {'fps': round(fps, 2)})
+                frame_count = 0
+                start_time = time.time()
+
+            # Encode and stream frame for browser
             _, buffer = cv2.imencode('.jpg', frame)
             yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
+            # --- Add this block to limit FPS ---
+            loop_end = time.time()
+            process_time = loop_end - loop_start
+            if process_time < FRAME_INTERVAL:
+                time.sleep(FRAME_INTERVAL - process_time)
+            # -----------------------------------
+
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-
 @app.route('/images/<filename>')
 def serve_image(filename):
     """Serves image files from the UPLOAD_FOLDER."""
@@ -126,12 +148,7 @@ def alert_callback(data):
         **data,
         'timestamp': datetime.now().isoformat()
     })
-
-if __name__ == '__main__':
-    init_db()
-    create_admin_user()
-    socketio.run(app, debug=True)
-
+    
 
 @app.route('/api/stats')
 def api_stats():

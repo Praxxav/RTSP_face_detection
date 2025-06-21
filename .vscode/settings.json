@@ -1,3 +1,6 @@
 {
-    "livePreview.defaultPreviewPath": "/templates/function/login.html"
+    "livePreview.defaultPreviewPath": "/templates/function/login.html",
+    "python.analysis.extraPaths": [
+        "./detection"
+    ]
 }
