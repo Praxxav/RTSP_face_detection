@@ -7,3 +7,5 @@ numpy
 bcrypt
 flask-cors
 setuptools>=65.5.0
+tensorflow==2.13.0
+
