@@ -9,3 +9,5 @@ flask-cors
 setuptools>=65.5.0
 tensorflow==2.13.0
 protobuf<4.21.0
+setuptools>=65.5.0
+wheel
