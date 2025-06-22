@@ -9,9 +9,9 @@ from flask_socketio import SocketIO
 
 from detection.face_detector import FaceDetector
 from database.model import save_detection, create_alert
-
+ 
 class OptimizedStreamProcessor:
-    def __init__(self, stream_url, app, confidence_threshold=0.8):
+    def __init__(self, stream_url, app,socketio,confidence_threshold=0.8):
         self.stream_url = stream_url
         self.confidence_threshold = confidence_threshold
         self.cap = None
@@ -28,9 +28,9 @@ class OptimizedStreamProcessor:
         self.last_detection_time = {}
         self.alert_cooldown = 30
         self.upload_folder = app.config['UPLOAD_FOLDER']
-        self.socketio = SocketIO(app, cors_allowed_origins="*")
         self.app = app
-
+        self.socketio = socketio
+  
     def start(self):
         self.running = True
         self.cap = cv2.VideoCapture(self.stream_url)
@@ -78,7 +78,8 @@ class OptimizedStreamProcessor:
             if elapsed >= 1.0:
                 actual_fps = self.fps_counter / elapsed
                 print(f"Actual FPS: {actual_fps:.1f}")
-                self.socketio.emit('fps_update', {'fps': round(actual_fps, 1)})
+                self.socketio.emit('fps_update', {'fps': round(actual_fps, 1),
+                                                  })
                 self.fps_counter = 0
                 self.fps_start_time = time.time()
 
@@ -92,7 +93,13 @@ class OptimizedStreamProcessor:
             try:
                 frame, timestamp = self.frame_queue.get(timeout=1.0)
                 detections = self.face_detector.detect_optimized(frame, self.confidence_threshold)
+                print(f"🧪 Detections: {detections}")
 
+                self.socketio.emit('face_count_update', {
+                'face_count': len(detections),
+                'stream': 'webcam',
+                'timestamp': datetime.now().isoformat()
+})
                 if detections:
                     current_time = datetime.now()
                     stream_id = 'webcam'

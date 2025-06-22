@@ -18,16 +18,25 @@ function startDetection() {
 
     socket.on('new_alert', (data) => {
       console.log('📡 New detection received:', data);
+
       const faceCount = data.face_count || 0;
       detectionCount += faceCount;
 
+      // Update stats
       document.getElementById('totalFaces').textContent = detectionCount;
       document.getElementById('lastDetection').textContent = new Date(data.timestamp).toLocaleTimeString();
-      addDetection(faceCount);
 
+      // Add to recent list
+      addDetection(faceCount, data.frame_url);
+
+      // Show snapshot
       if (data.frame_url) {
         document.getElementById('snapshotImage').src = data.frame_url + `?t=${Date.now()}`;
       }
+    });
+
+    socket.on('face_count_update', (data) => {
+      document.getElementById('totalFaces').textContent = data.face_count;
     });
   }
 }
@@ -70,16 +79,25 @@ function updateConfig() {
   alert('Configuration updated successfully!');
 }
 
-function addDetection(faceCount) {
+function addDetection(faceCount, frameUrl = null) {
   const detectionsList = document.getElementById('detectionsList');
   const timestamp = new Date().toLocaleTimeString();
   const detectionItem = document.createElement('div');
   detectionItem.className = 'detection-item';
   detectionItem.innerHTML = `
     <span class="timestamp">${timestamp}</span>
-    <span class="face-count">${faceCount} face${faceCount > 1 ? 's' : ''}</span>
+    <span class="face-count">${faceCount} face${faceCount !== 1 ? 's' : ''}</span>
+    ${frameUrl ? `<br/><img src="${frameUrl}?t=${Date.now()}" width="200" />` : ''}
   `;
+
+  // Remove "no detections yet"
+  const placeholder = detectionsList.querySelector('.detection-item span.timestamp');
+  if (placeholder && placeholder.textContent.includes('No detections')) {
+    detectionsList.innerHTML = '';
+  }
+
   detectionsList.insertBefore(detectionItem, detectionsList.firstChild);
+
   while (detectionsList.children.length > 10) {
     detectionsList.removeChild(detectionsList.lastChild);
   }

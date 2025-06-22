@@ -26,7 +26,7 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 
 # Global stream processor
-stream_processor = OptimizedStreamProcessor(0, app)  # 0 for webcam or RTSP URL
+stream_processor = OptimizedStreamProcessor(0, app,socketio)  # 0 for webcam or RTSP URL
 
 def create_admin_user():
     conn = get_db_connection()
