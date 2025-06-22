@@ -4,12 +4,12 @@ import os
 
 class Config:
     # RTSP Stream Configuration
-    RTSP_URL = "rtsp://admin:password@192.168.1.100:554/stream1"
+    rtspUrl = "rtsp://admin:admin123@49.248.155.178:555/cam/realmonitor?channel=1&subtype=0"
     
-    # Alternative RTSP URLs for different camera types
+    
     # RTSP_URL = "rtsp://username:password@ip:port/live"
     # RTSP_URL = "rtsp://192.168.1.100:8080/video/mjpeg"
-    # For testing with webcam, use: RTSP_URL = 0
+  
     
     # Face Detection Models (OpenCV Haar Cascades)
     CASCADE_PATH = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'

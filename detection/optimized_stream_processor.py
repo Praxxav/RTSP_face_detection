@@ -32,6 +32,7 @@ class OptimizedStreamProcessor:
         self.socketio = socketio
   
     def start(self):
+
         self.running = True
         self.cap = cv2.VideoCapture(self.stream_url)
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
@@ -45,6 +46,9 @@ class OptimizedStreamProcessor:
         if self.cap:
             self.cap.release()
 
+
+        # Producer    
+        # This thread captures frames from the webcam and adds them to the queue
     def _capture_frames(self):
         frame_time = 1.0 / self.target_fps
 
@@ -88,12 +92,15 @@ class OptimizedStreamProcessor:
             if sleep_time > 0:
                 time.sleep(sleep_time)
 
+# Consumer
+#This thread pulls frames from the queue and runs face detection:
+
     def _process_detections(self):
         while self.running:
             try:
-                frame, timestamp = self.frame_queue.get(timeout=1.0)
+                frame, timestamp = self.frame_queue.get(timeout=1)
                 detections = self.face_detector.detect_optimized(frame, self.confidence_threshold)
-                print(f"🧪 Detections: {detections}")
+                print(f" Detections: {detections}")
 
                 self.socketio.emit('face_count_update', {
                 'face_count': len(detections),

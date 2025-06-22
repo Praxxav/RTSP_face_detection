@@ -1,6 +1,8 @@
-import cv2, threading, time
+
+import cv2, threading
 from mtcnn import MTCNN
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 class FaceDetector:
@@ -13,3 +15,4 @@ class FaceDetector:
         with self.lock:
             results = self.detector.detect_faces(rgb)
         return [r for r in results if r['confidence'] >= threshold]
+

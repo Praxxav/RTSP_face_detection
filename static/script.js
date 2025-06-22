@@ -119,5 +119,5 @@ function updateUptime() {
 setInterval(updateUptime, 1000);
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('✅ RTSP Face Detection Dashboard loaded (Real-Time Mode)');
+  console.log('RTSP Face Detection Dashboard loaded (Real-Time Mode)');
 });

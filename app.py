@@ -25,8 +25,8 @@ stream_processors = {}
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 
-# Global stream processor
-stream_processor = OptimizedStreamProcessor(0, app,socketio)  # 0 for webcam or RTSP URL
+# Initialize the stream processor with a default webcam or RTSP URL
+stream_processor = OptimizedStreamProcessor( 0, app,socketio)  
 
 def create_admin_user():
     conn = get_db_connection()
@@ -69,7 +69,7 @@ def login():
         if not username or not password:
             return render_template('function/login.html', error='Missing credentials')
         
-        conn = get_db_connection()
+        conn = get_db_connection() 
         try:
             cursor = conn.cursor()
             cursor.execute("SELECT id, password_hash FROM users WHERE username = ?", (username,))
@@ -181,7 +181,7 @@ def api_alerts():
         return jsonify(alerts)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
+    
 if __name__ == '__main__':
     init_db()
     ensure_detections_table()  # Ensure proper table schema
