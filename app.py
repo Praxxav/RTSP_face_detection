@@ -26,7 +26,7 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 
 # Initialize the stream processor with a default webcam or RTSP URL
-stream_processor = OptimizedStreamProcessor( 0, app,socketio)  
+stream_processor = OptimizedStreamProcessor( "rtsp://admin:admin123@49.248.155.178:555/cam/realmonitor?channel=1&subtype=0", app,socketio)  
 
 def create_admin_user():
     conn = get_db_connection()
