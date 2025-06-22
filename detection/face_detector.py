@@ -1,5 +1,7 @@
 import cv2, threading, time
 from mtcnn import MTCNN
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 class FaceDetector:
     def __init__(self):

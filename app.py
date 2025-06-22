@@ -1,12 +1,14 @@
 import time
+
 from flask import Flask, jsonify, render_template, request, session, redirect, url_for, send_from_directory, Response
-from flask_socketio import SocketIO, emit
-import bcrypt, cv2, os, threading
+from flask_socketio import SocketIO
+import bcrypt, cv2, os
 from datetime import datetime
 
 
 from detection.face_detector import FaceDetector
-from detection.stream_processor import StreamProcessor
+from detection.optimized_stream_processor import OptimizedStreamProcessor
+
 from database.model import init_db, get_db_connection
 from flask_cors import CORS
 
@@ -17,9 +19,14 @@ app.config['SECRET_KEY'] = 'fsfidvkjfvkjk'
 app.config['UPLOAD_FOLDER'] = 'static/images'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+# Global variables for performance optimization
 face_detector = FaceDetector()
 stream_processors = {}
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+
+# Global stream processor
+stream_processor = OptimizedStreamProcessor(0, app)  # 0 for webcam or RTSP URL
 
 def create_admin_user():
     conn = get_db_connection()
@@ -36,6 +43,17 @@ def create_admin_user():
     finally:
         conn.close()
 
+def ensure_detections_table():
+    """Ensure the detections table exists - using existing init_db"""
+    try:
+        # Just call the existing init_db function to ensure tables exist
+        init_db()
+        print("Database tables verified/created successfully")
+    except Exception as e:
+        print(f"Error ensuring database tables: {e}")
+        import traceback
+        traceback.print_exc()
+
 @app.route('/')
 def index():
     if 'user_id' not in session:
@@ -49,7 +67,7 @@ def login():
         password = request.form.get('password')
         
         if not username or not password:
-            return render_template('static/function/login.html', error='Missing credentials')
+            return render_template('function/login.html', error='Missing credentials')
         
         conn = get_db_connection()
         try:
@@ -66,7 +84,7 @@ def login():
         finally:
             conn.close()
     
-    return render_template('function/login.html')  # Corrected template path
+    return render_template('function/login.html')
 
 @app.route('/logout')
 def logout():
@@ -75,63 +93,27 @@ def logout():
 
 @app.route('/video_feed')
 def video_feed():
+    """Optimized video feed that just streams frames"""
     def generate_frames():
-        cap = cv2.VideoCapture(0)  # replace with RTSP_URL
-        frame_count = 0
-        start_time = time.time()
-        TARGET_FPS = 15
-        FRAME_INTERVAL = 1.0 / TARGET_FPS
-
         while True:
-            loop_start = time.time()
-            success, frame = cap.read()
-            if not success:
-                continue
-
-            # Detection
-            detections = face_detector.detect_optimized(frame, 0.8)
-            if detections:
-                for det in detections:
-                    x, y, w, h = det['box']
-                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-                # Save snapshot
-                snapshot_path = os.path.join(app.config['UPLOAD_FOLDER'], 'snapshot.jpg')
-                cv2.imwrite(snapshot_path, frame)
-
-                # Emit detection alert
-                alert_callback({
-                    'face_count': len(detections),
-                    'stream': 'webcam',
-                    'frame_url': '/images/snapshot.jpg'
-                })
-
-            # FPS tracking
-            frame_count += 1
-            elapsed = time.time() - start_time
-            if elapsed >= 1.0:
-                fps = frame_count / elapsed
-                socketio.emit('fps_update', {'fps': round(fps, 2)})
-                frame_count = 0
-                start_time = time.time()
-
-            # Encode and stream frame for browser
-            _, buffer = cv2.imencode('.jpg', frame)
-            yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
-
-            # --- Add this block to limit FPS ---
-            loop_end = time.time()
-            process_time = loop_end - loop_start
-            if process_time < FRAME_INTERVAL:
-                time.sleep(FRAME_INTERVAL - process_time)
-            # -----------------------------------
+            if stream_processor.last_frame is not None:
+                # Get the latest frame without blocking
+                frame = stream_processor.last_frame.copy()
+                
+                # Encode frame efficiently
+                encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 85]  # Reduce quality for speed
+                _, buffer = cv2.imencode('.jpg', frame, encode_param)
+                
+                yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+            else:
+                time.sleep(0.033)  # ~30 FPS for display
 
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 @app.route('/images/<filename>')
 def serve_image(filename):
     """Serves image files from the UPLOAD_FOLDER."""
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
 
 @socketio.on('connect')
 def on_connect():
@@ -144,22 +126,71 @@ def on_disconnect():
     print("Client disconnected:", session.get('username'))
 
 def alert_callback(data):
+    """Emit alert to connected clients"""
     socketio.emit('new_alert', {
         **data,
         'timestamp': datetime.now().isoformat()
     })
-    
 
 @app.route('/api/stats')
 def api_stats():
     if 'user_id' not in session:
         return jsonify({'error': 'Unauthorized'}), 401
     
-    from database.model import get_detection_stats  # Import inside function
-    stats = get_detection_stats()
-    return jsonify(stats)
+    try:
+        from database.model import get_detection_stats
+        stats = get_detection_stats()
+        return jsonify(stats)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/streams/start')
+def start_stream():
+    """Start the stream processing"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        stream_processor.start()
+        return jsonify({'status': 'started'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/streams/stop')
+def stop_stream():
+    """Stop the stream processing"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        stream_processor.stop()
+        return jsonify({'status': 'stopped'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/alerts')
+def api_alerts():
+    """Get recent alerts"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        from database.model import get_recent_alerts
+        limit = request.args.get('limit', 10, type=int)
+        alerts = get_recent_alerts(limit=limit)
+        return jsonify(alerts)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     init_db()
+    ensure_detections_table()  # Ensure proper table schema
     create_admin_user()
-    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
+    
+    # Start stream processing
+    stream_processor.start()
+    
+    try:
+        socketio.run(app, debug=False, allow_unsafe_werkzeug=True, host='0.0.0.0', port=5000)
+    finally:
+        stream_processor.stop()
