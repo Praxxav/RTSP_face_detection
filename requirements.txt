@@ -1,7 +1,9 @@
 flask
-flask-socketio
-bcrypt
+flask_socketio
+eventlet
+mtcnn
 opencv-python
-mtcnn==0.1.0
-pillow
 numpy
+bcrypt
+flask-cors
+setuptools>=65.5.0
