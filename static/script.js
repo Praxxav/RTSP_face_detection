@@ -96,7 +96,7 @@ function addDetection(faceCount, frameUrl = null) {
     detectionsList.innerHTML = '';
   }
 
-  detectionsList.insertBefore(detectionItem, detectionsList.firstChild);
+ detectionsList.insertBefore(detectionItem, detectionsList.firstChild);
 
   while (detectionsList.children.length > 10) {
     detectionsList.removeChild(detectionsList.lastChild);

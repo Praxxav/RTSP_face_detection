@@ -9,6 +9,7 @@ from flask_socketio import SocketIO
 
 from detection.face_detector import FaceDetector
 from database.model import save_detection, create_alert
+from detection.vehicle_detector import VehicleDetector
  
 class OptimizedStreamProcessor:
     def __init__(self, stream_url, app,socketio,confidence_threshold=0.8):
@@ -20,11 +21,12 @@ class OptimizedStreamProcessor:
         self.fps_counter = 0
         self.fps_start_time = time.time()
         self.target_fps = 15
-        self.frame_skip = 2
+        self.frame_skip = 1
         self.frame_count = 0
         self.frame_queue = queue.Queue(maxsize=10)
 
         self.face_detector = FaceDetector()
+        self.vehicle_detector = VehicleDetector()
         self.last_detection_time = {}
         self.alert_cooldown = 30
         self.upload_folder = app.config['UPLOAD_FOLDER']
@@ -60,11 +62,11 @@ class OptimizedStreamProcessor:
                 continue
 
             height, width = frame.shape[:2]
-            if width > 640:
-                scale = 640 / width
+            if width > 1280:
+                scale = 1280 / width
                 frame = cv2.resize(frame, (int(width * scale), int(height * scale)))
 
-            self.last_frame = frame.copy()
+            self.last_frame = frame
 
             self.frame_count += 1
             if self.frame_count % self.frame_skip == 0:
@@ -98,8 +100,11 @@ class OptimizedStreamProcessor:
     def _process_detections(self):
         while self.running:
             try:
-                frame, timestamp = self.frame_queue.get(timeout=1)
-                detections = self.face_detector.detect_optimized(frame, self.confidence_threshold)
+                frame= self.frame_queue.get(timeout=1)
+                frame = frame[0]  # Extract the frame from the tuple
+                # detections = self.vehicle_detector.detect_vehicles(frame)
+                detections = self.face_detector.detect_optimized(frame, self.confidence_threshold) 
+                self.detections = detections  # Store detections for later use
                 print(f" Detections: {detections}")
 
                 self.socketio.emit('face_count_update', {
@@ -109,7 +114,7 @@ class OptimizedStreamProcessor:
 })
                 if detections:
                     current_time = datetime.now()
-                    stream_id = 'webcam'
+                    stream_id = 'Rtsp_url'
 
                     if (stream_id not in self.last_detection_time or
                             (current_time - self.last_detection_time[stream_id]).seconds >= self.alert_cooldown):

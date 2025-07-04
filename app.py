@@ -1,13 +1,15 @@
 import time
 
-from flask import Flask, jsonify, render_template, request, session, redirect, url_for, send_from_directory, Response
+from flask import Flask, jsonify, render_template, request, session, redirect, url_for, send_from_directory, Response # type: ignore
 from flask_socketio import SocketIO
 import bcrypt, cv2, os
 from datetime import datetime
 
 
 from detection.face_detector import FaceDetector
+from detection.vehicle_detector import VehicleDetector
 from detection.optimized_stream_processor import OptimizedStreamProcessor
+
 
 from database.model import init_db, get_db_connection
 from flask_cors import CORS
@@ -21,6 +23,8 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Global variables for performance optimization
 face_detector = FaceDetector()
+vehicle_detector = VehicleDetector()
+
 stream_processors = {}
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -100,8 +104,14 @@ def video_feed():
                 # Get the latest frame without blocking
                 frame = stream_processor.last_frame.copy()
                 
+                for det in getattr(stream_processor, 'detections', []):
+                    x, y, w, h = det['box']
+                    confidence = det['confidence']
+                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                    cv2.putText(frame, f'{confidence:.2f}', (x, y - 10),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
                 # Encode frame efficiently
-                encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 85]  # Reduce quality for speed
+                encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 95]  # Reduce quality for speed
                 _, buffer = cv2.imencode('.jpg', frame, encode_param)
                 
                 yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
