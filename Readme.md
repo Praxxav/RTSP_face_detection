@@ -1,165 +1,160 @@
-# RTSP Face Detection System with Database and Alerts
+# RTSP Face Detection Hub 🚀
 
-A real-time face detection system that captures faces from RTSP streams, stores alerts in a SQLite database, and displays them on a browser-based dashboard.
+A modern, real-time face detection system with a **HOT** new UI featuring gradient colors, smooth animations, and sleek design.
 
----
+## ✨ New Features
 
-## 🚀 Features
+### 🎨 **Hot Modern UI**
+- **Black Theme**: Sleek dark interface with glass-morphism effects
+- **Gradient Colors**: Beautiful gradient combinations (red-to-cyan, blue-to-purple, pink-to-red)
+- **Animated Background**: Floating gradient orbs with particle effects
+- **Glass Cards**: Transparent cards with backdrop blur effects
 
-- 🔍 Real-time **MTCNN-based face detection**
-- 🎥 RTSP/IP camera stream support (or webcam fallback)
-- 📷 Snapshots with bounding boxes and keypoints
-- 📊 Dashboard with total faces, FPS, uptime
-- 🧠 SQLite-based logging of:
-  - Detections (with confidence, image, bounding box)
-  - Alerts (viewed/dismissed status)
-- 👤 Simple Login/Logout authentication
-- 📦 Modular structure for easy maintenance
+### 🎭 **Smooth Animations**
+- **Framer Motion**: Professional-grade animations and transitions
+- **AOS Animations**: Scroll-triggered entrance animations
+- **Hover Effects**: Interactive hover states with smooth transitions
+- **Number Animations**: Smooth counting animations for statistics
 
----
+### 🎯 **Enhanced UX**
+- **Modern Typography**: Inter font family for better readability
+- **Responsive Design**: Mobile-first responsive layout
+- **Interactive Elements**: Hover effects, smooth transitions, and micro-interactions
+- **Status Indicators**: Real-time status with animated dots
+- **Notifications**: Toast notifications for user feedback
 
-## 🛠️ Technologies Used
+### 🔧 **Technical Improvements**
+- **Modern CSS**: CSS custom properties, flexbox, and grid layouts
+- **Performance**: Optimized animations with requestAnimationFrame
+- **Accessibility**: Better contrast, focus states, and keyboard navigation
+- **Cross-browser**: Modern CSS features with fallbacks
 
-- **Backend**: Python, Flask, OpenCV, MTCNN, SQLite
-- **Frontend**: HTML, CSS, JS (vanilla)
-- **Database**: SQLite3
-- **Others**: Flask-SocketIO, bcrypt, threading, PIL
+## 🚀 Getting Started
 
----
+### Prerequisites
+- Python 3.7+
+- Flask
+- OpenCV
+- YOLOv8
 
-## 📁 Project Structure
-
-```
-rtsp_face_detection/
-│
-├── app.py                          # Flask entrypoint
-│
-├── database/
-│   ├── model.py                    # SQLite schema and helpers
-│   └── database.db                 # SQLite database (created at runtime)
-│
-├── detection/
-│   ├── face_detector.py            # MTCNN-based detector
-│   └── stream_processor.py         # Stream processing logic
-│
-├── static/
-│   ├── images/
-│   │   └── snapshot.jpg            # Saved detection images
-│   ├── script.js                   # Frontend JavaScript
-│   └── styles.css                  # Dashboard styling
-│
-├── templates/
-│   ├── function/
-│   │   ├── login.html              # Login screen template
-│   │   └── index.html              # Dashboard template functions
-│   └── venv/                       # Virtual environment files
-│
-├── config.py                       # Configuration settings             # Main SQLite database
-├── requirements.txt                # Python dependencies
-├── .gitignore                      # Git ignore file
-└── README.md                       # This file
-```
-
----
-
-## 🧪 How to Run
-
-### 1. Clone the repo
+### Installation
 ```bash
-git clone https://github.com/Praxxav/rtsp-face-detection.git
+# Clone the repository
+git clone <your-repo-url>
 cd rtsp_face_detection
-```
 
-### 2. Create and activate virtual environment
-```bash
-python -m venv venv
-source venv/bin/activate     # (Linux/macOS)
-venv\Scripts\activate        # (Windows)
-```
-
-### 3. Install dependencies
-```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-> _If you get MTCNN errors, make sure TensorFlow and Pillow are installed correctly._
-
-### 4. Run the application
-```bash
+# Run the application
 python app.py
 ```
 
-Open browser at: [http://127.0.0.1:5000](http://127.0.0.1:5000)
-
----
-
-## 🔐 Default Login
-
+### Default Credentials
 - **Username**: `admin`
 - **Password**: `admin123`
 
-> Auto-created on first run via `create_admin_user()`.
+## 🎨 UI Components
 
----
+### Color Scheme
+- **Primary**: Red to Cyan gradient (#FF6B6B → #4ECDC4)
+- **Secondary**: Blue to Purple gradient (#667eea → #764ba2)
+- **Accent**: Pink to Red gradient (#f093fb → #f5576c)
+- **Background**: Pure black (#000000)
+- **Cards**: Semi-transparent white with blur effects
 
-## 📊 Database Schema
+### Typography
+- **Font Family**: Inter (Google Fonts)
+- **Weights**: 300, 400, 500, 600, 700, 800
+- **Hierarchy**: Clear visual hierarchy with consistent spacing
 
-The system uses SQLite with the following main tables:
-- **Users**: Authentication and user management
-- **Detections**: Face detection logs with timestamps and confidence scores
-- **Alerts**: Alert management with viewed/dismissed status
+### Animations
+- **Entrance**: Fade-in and slide-up animations
+- **Hover**: Lift effects and scale transformations
+- **Transitions**: Smooth 0.3s ease transitions
+- **Loading**: Pulse animations for status indicators
 
----
+## 📱 Responsive Design
 
-## 🎯 Key Components
+- **Desktop**: Full-featured layout with side-by-side sections
+- **Tablet**: Stacked layout with optimized spacing
+- **Mobile**: Single-column layout with touch-friendly controls
 
-### Face Detection (`detection/`)
-- `face_detector.py`: MTCNN-based face detection implementation
-- `stream_processor.py`: Handles RTSP stream processing and frame analysis
+## 🎯 Key Features
 
-### Database Layer (`database/`)
-- `model.py`: SQLite schema definitions and database operations
-- `database.db`: Runtime SQLite database file
-
-### Web Interface (`static/` & `templates/`)
-- Dashboard with real-time face detection statistics
-- Login/authentication system
-- Responsive design with CSS styling
-- JavaScript for dynamic updates
-
----
-
-## ⚠️ Notes
-
-- This runs **only on CPU** with MTCNN
-- Live streaming supports `rtsp://` URLs or defaults to webcam
-- Performance: ~10–15 FPS on decent CPU
-- Detection images are saved in `static/images/`
-- Database is automatically created on first run
-
----
+1. **Real-time Detection**: Live video stream with face detection
+2. **Statistics Dashboard**: Real-time metrics and performance indicators
+3. **Configuration Panel**: Easy-to-use settings management
+4. **Detection History**: Scrollable list of recent detections
+5. **Snapshot Capture**: Capture and view detection images
+6. **Status Monitoring**: Real-time connection and detection status
 
 ## 🔧 Configuration
 
-Edit `config.py` to modify:
+The system supports various configuration options:
 - RTSP stream URL
-- Detection sensitivity
-- Database settings
-- Flask configuration
+- Frame dimensions
+- Detection parameters
+- Performance settings
+
+## 🚀 Performance Features
+
+- **Optimized Rendering**: Efficient canvas-based snapshot capture
+- **Smooth Animations**: 60fps animations with requestAnimationFrame
+- **Lazy Loading**: Progressive enhancement for better performance
+- **Memory Management**: Efficient cleanup of old detection items
+
+## 🎨 Customization
+
+### Colors
+Modify CSS custom properties in `static/styles.css`:
+```css
+:root {
+    --primary-gradient: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    --secondary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* ... more variables */
+}
+```
+
+### Animations
+Adjust animation timing and easing:
+```css
+.stat-card {
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+}
+```
+
+## 🌟 Future Enhancements
+
+- [ ] Dark/Light theme toggle
+- [ ] Custom color schemes
+- [ ] Advanced animation presets
+- [ ] Performance monitoring dashboard
+- [ ] Export/import configurations
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- **Framer Motion** for smooth animations
+- **AOS** for scroll animations
+- **Inter Font** for beautiful typography
+- **OpenCV** for computer vision capabilities
 
 ---
 
-## 🐛 Troubleshooting
-
-**Common Issues:**
-1. **MTCNN Installation**: Ensure TensorFlow is properly installed
-2. **Camera Access**: Check RTSP URL format and camera permissions
-3. **Database Errors**: Ensure write permissions in project directory
-4. **Port Conflicts**: Change Flask port in `app.py` if 5000 is occupied
-
----
-
-## 👤 Developed By
-
-**Pranav Kulkarni**  
-For **Skylark Labs Assignment** – Test 2
+**Made with ❤️ and lots of gradients!** 🎨✨

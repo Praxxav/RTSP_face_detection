@@ -5,97 +5,268 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>RTSP Vehicle Detection Dashboard</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <!-- Removed problematic Framer Motion script -->
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>RTSP Vehicle Detection System</h1>
-      <p>Real-time Vehicle detection from RTSP camera streams</p>
+  <div class="app-container">
+    <!-- Animated Background -->
+    <div class="animated-background">
+      <div class="gradient-orb orb-1"></div>
+      <div class="gradient-orb orb-2"></div>
+      <div class="gradient-orb orb-3"></div>
+      <div class="floating-particles"></div>
     </div>
 
-    <div class="dashboard">
-      <div class="video-section">
-        <h3>Live Video Feed</h3>
-        <div class="video-container">
-          <img id="video" src="http://127.0.0.1:5000/video_feed" alt="Live Feed" />
-          <img id="snapshotImage" width="300" style="margin-top: 10px;" />
+    <!-- Header Section -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="logo-section">
+          <div class="logo-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="url(#gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="url(#gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="url(#gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#FF6B6B"/>
+                <stop offset="100%" style="stop-color:#4ECDC4"/>
+              </linearGradient>
+            </defs>
+          </div>
+          <h1 class="app-title">RTSP Detection Hub</h1>
         </div>
-        <div class="controls">
-          <button class="btn btn-primary" onclick="startDetection()">Start Detection</button>
-          <button class="btn btn-secondary" onclick="stopDetection()">Stop</button>
-          <button class="btn btn-secondary" onclick="takeSnapshot()">Snapshot</button>
-          <span>Status: <span id="status">Offline</span></span>
-          <span class="status-indicator status-offline" id="statusIndicator"></span>
-        </div>
-      </div>
-
-      <div class="stats-section">
-        <h3>Detection Statistics</h3>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-number" id="totalFaces">0</div>
-            <div class="stat-label">Total vehicles</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number" id="currentFps">0</div>
-            <div class="stat-label">FPS</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number" id="uptime">00:00</div>
-            <div class="stat-label">Uptime</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number" id="lastDetection">Never</div>
-            <div class="stat-label">Last Detection</div>
-          </div>
-        </div>
-
-        <h4>Recent Detections</h4>
-        <div class="detections-list" id="detectionsList">
-          <div class="detection-item">
-            <span class="timestamp">No detections yet</span>
-          </div>
+        <div class="header-actions">
+          <button class="logout-btn" onclick="logout()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 17L21 12L16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Logout
+          </button>
         </div>
       </div>
-    </div>
+    </header>
 
-    <div class="config-section">
-      <h3>Configuration</h3>
-      <div class="grid-two">
-        <div>
-          <div class="form-group">
-            <label for="rtspUrl">RTSP URL:</label>
-            <input type="text" id="rtspUrl" value="rtsp://admin:admin123@49.248.155.178:555/cam/realmonitor?channel=1&subtype=0" />
+    <!-- Main Dashboard -->
+    <main class="dashboard-main">
+      <div class="dashboard-grid">
+        <!-- Video Section -->
+        <section class="video-section">
+          <div class="section-header">
+            <h2>Live Stream</h2>
+            <div class="status-badge" id="statusBadge">
+              <span class="status-dot" id="statusDot"></span>
+              <span class="status-text" id="statusText">Offline</span>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="frameWidth">Frame Width:</label>
-            <input type="number" id="frameWidth" value="640" />
+          
+          <div class="video-container">
+            <div class="video-wrapper">
+              <img id="video" src="http://127.0.0.1:5000/video_feed" alt="Live Feed" />
+              <div class="video-overlay">
+                <div class="play-button" id="playButton">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                    <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            <div class="video-controls">
+              <button class="control-btn primary" onclick="startDetection()" id="startBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
+                </svg>
+                Start Detection
+              </button>
+              <button class="control-btn secondary" onclick="stopDetection()" id="stopBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <rect x="6" y="6" width="12" height="12" fill="currentColor"/>
+                </svg>
+                Stop
+              </button>
+              <button class="control-btn secondary" onclick="takeSnapshot()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M23 19C23 19.5304 22.7893 20.0391 22.4142 20.4142C22.0391 20.7893 21.5304 21 21 21H3C2.46957 21 1.96086 20.7893 1.58579 20.4142C1.21071 20.0391 1 19.5304 1 19V8C1 7.46957 1.21071 6.96086 1.58579 6.58579C1.96086 6.21071 2.46957 6 3 6H7L9 3H15L17 6H21C21.5304 6 22.0391 6.21071 22.4142 6.58579C22.7893 6.96086 23 7.46957 23 8V19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Snapshot
+              </button>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="frameHeight">Frame Height:</label>
-            <input type="number" id="frameHeight" value="480" />
+        </section>
+
+        <!-- Stats Section -->
+        <section class="stats-section">
+          <div class="section-header">
+            <h2>Real-time Metrics</h2>
+            <div class="refresh-indicator">
+              <div class="pulse-dot"></div>
+              Live
+            </div>
           </div>
-        </div>
-        <div>
-          <div class="form-group">
-            <label for="scaleFactor">Scale Factor:</label>
-            <input type="number" id="scaleFactor" value="1.1" step="0.1" />
+          
+          <div class="stats-grid">
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+              <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                  <path d="M23 21V19C23 18.1474 22.7365 17.3111 22.2472 16.6044C21.7579 15.8976 21.0649 15.3549 20.25 15.05" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0122 6.11683 19.0122 7.005C19.0122 7.89317 18.7122 8.75608 18.1676 9.45768C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number" id="totalFaces">0</div>
+                <div class="stat-label">Total Detections</div>
+              </div>
+            </div>
+            
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+              <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                  <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number" id="currentFps">0</div>
+                <div class="stat-label">FPS</div>
+              </div>
+            </div>
+            
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="300">
+              <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 18V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M4.93 4.93L7.76 7.76" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M16.24 16.24L19.07 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M2 12H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M18 12H22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M4.93 19.07L7.76 16.24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M16.24 7.76L19.07 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number" id="uptime">00:00</div>
+                <div class="stat-label">Uptime</div>
+              </div>
+            </div>
+            
+            <div class="stat-card" data-aos="fade-up" data-aos-delay="400">
+              <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number" id="lastDetection">Never</div>
+                <div class="stat-label">Last Detection</div>
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="minNeighbors">Min Neighbors:</label>
-            <input type="number" id="minNeighbors" value="5" />
+        </section>
+
+        <!-- Recent Detections -->
+        <section class="detections-section">
+          <div class="section-header">
+            <h2>Recent Activity</h2>
+            <div class="detection-count" id="detectionCount">0 detections</div>
           </div>
-          <div class="form-group">
-            <label for="minSize">Min Face Size:</label>
-            <input type="number" id="minSize" value="30" />
+          
+          <div class="detections-list" id="detectionsList">
+            <div class="empty-state">
+              <div class="empty-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </div>
+              <p>No detections yet</p>
+              <span>Start detection to see activity</span>
+            </div>
           </div>
-        </div>
+        </section>
+
+        <!-- Configuration Section -->
+        <section class="config-section">
+          <div class="section-header">
+            <h2>Configuration</h2>
+            <button class="config-save-btn" onclick="updateConfig()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M9 7H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M9 11H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M9 15H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Save Config
+            </button>
+          </div>
+          
+          <div class="config-grid">
+            <div class="config-group">
+              <label for="rtspUrl">RTSP Stream URL</label>
+              <input type="text" id="rtspUrl" value="rtsp://admin:admin123@49.248.155.178:555/cam/realmonitor?channel=1&subtype=0" placeholder="Enter RTSP URL" />
+            </div>
+            
+            <div class="config-row">
+              <div class="config-group">
+                <label for="frameWidth">Frame Width</label>
+                <input type="number" id="frameWidth" value="640" min="320" max="1920" />
+              </div>
+              <div class="config-group">
+                <label for="frameHeight">Frame Height</label>
+                <input type="number" id="frameHeight" value="480" min="240" max="1080" />
+              </div>
+            </div>
+            
+            <div class="config-row">
+              <div class="config-group">
+                <label for="scaleFactor">Scale Factor</label>
+                <input type="number" id="scaleFactor" value="1.1" step="0.1" min="1.0" max="2.0" />
+              </div>
+              <div class="config-group">
+                <label for="minNeighbors">Min Neighbors</label>
+                <input type="number" id="minNeighbors" value="5" min="1" max="10" />
+              </div>
+            </div>
+            
+            <div class="config-group">
+              <label for="minSize">Min Detection Size</label>
+              <input type="number" id="minSize" value="30" min="20" max="100" />
+            </div>
+          </div>
+        </section>
       </div>
-      <button class="btn btn-primary" onclick="updateConfig()">Update Configuration</button>
+    </main>
+  </div>
+
+  <!-- Snapshot Modal -->
+  <div class="modal-overlay" id="snapshotModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Snapshot Captured</h3>
+        <button class="modal-close" onclick="closeSnapshotModal()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img id="snapshotImage" alt="Snapshot" />
+      </div>
     </div>
   </div>
 
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
