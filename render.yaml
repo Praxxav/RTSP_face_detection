@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: watchai
+    env: python
+    plan: free
+    runtime: python-3.11
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: python app.py
+s
