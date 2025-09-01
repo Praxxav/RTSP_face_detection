@@ -17,7 +17,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-app.config['SECRET_KEY'] = 'fsfidvkjfvkjk'
+app.config['SECRET_KEY'] = 'RTC2024SecretKey'
 app.config['UPLOAD_FOLDER'] = 'static/images'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
